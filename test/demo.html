@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>xss defense</title>
+    <script src="jquery.min.js"></script>
+</head>
+<body>
+<div id="xss-panel">
+
+</div>
+<script src="./../src/level_top_vest.js"></script>
+
+<script>
+    var xsspanel = document.querySelector('#xss-panel');
+    var $xsspanel = $('#xss-panel');
+    // xsspanel.innerHTML = "<img src='' onerror='javascript:alert(111)'> ";
+    $xsspanel.html("<script>alert(1)<\/script>")
+</script>
+
+</body>
+</html>
