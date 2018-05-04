@@ -1,21 +1,22 @@
 css 主动防御
 
 #攻击范本：
-><script>alert(11)</script><
-><img src="javascript:alert(1)" onerror="javascript:alert(1)" /><
-javascript:alert(11);
+1. ><script>alert(11)</script><
+2. ><img src="javascript:alert(1)" onerror="javascript:alert(1)" /><
+3. javascript:alert(11);
 
 
 #漏洞点：
-$el.html(xss);   // 限制提取 javascript 运行
-el.innerHTML = xss  //
-el.setAttribute("src" , xss) // src 钩子
-#el.appendChild(xss);
-//document.write(xss);
-//<a href="xss" >
-<img src="xss"  />
-<object src="xss">
-<iframe src="xss" onerror="xss" />
+1. $el.html(xss);   // 限制提取 javascript 运行
+2. el.innerHTML = xss  // 
+3. el.setAttribute("src" , xss) // src 钩子
+4. el.appendChild(xss);
+5. document.write(xss);
+6. <a href="xss" >
+7. <img src="xss"  />
+8. <object src="xss">
+9. <iframe src="xss" onerror="xss" />
+
 
 
 #生成漏洞的几个原因：
