@@ -4,6 +4,7 @@ css 主动防御
 1. &gt;&lt;script>alert(11)</script><
 2. &gt;&lt;img src="javascript:alert(1)" onerror="javascript:alert(1)" /><
 3. javascript:alert(11);
+4. data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==
 
 
 #漏洞点：
