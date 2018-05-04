@@ -12,10 +12,76 @@
 <script src="./../src/level_top_vest.js"></script>
 
 <script>
+
+    var checkIsXssScript = function (node){
+
+    }
+
+    var checkIsXssImg = function (node){
+
+    }
+
+    var checkIsXssIframe = function (node){
+
+    }
+
+    var checkIsXssA = function (node){
+
+    }
+
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+
+            var nodes = mutation.addedNodes;
+            for (var i = 0; i < nodes.length; i++) {
+                var node = nodes[i];
+                console.log('detect :', node);
+
+                //检测
+                if(node.tagName == "SCRIPT" && checkIsXssScript(node) ){
+                    node.parentNode.removeChild(node);
+                    console.log('拦截可疑模块:', node);
+                }
+
+                if(node.tagName == "IMG" && checkIsXssImg(node) ){
+                    node.onerror = function (){};
+                    console.log('拦截可疑模块:', node);
+                }
+
+                if(node.tagName == "IFRAME" && checkIsXssImg(node) ){
+                    node.parentNode.removeChild(node);
+                    console.log('拦截可疑模块:', node);
+                }
+
+                if(node.tagName == "OBJECT" && checkIsXssImg(node) ){
+                    node.parentNode.removeChild(node);
+                    console.log('拦截可疑模块:', node);
+                }
+
+                if(node.tagName == "A" && checkIsXssA(node) ){
+                    node.setAttribute("src" , "javascript:;")
+                    console.log('拦截可疑模块:', node);
+                }
+
+               /* if (/xss/.test(node.src) || /xss/.test(node.innerHTML)) {
+                    node.parentNode.removeChild(node);
+                    console.log('拦截可疑模块:', node);
+                }*/
+            }
+        });
+    });
+
+    observer.observe(document, {
+        subtree: true,
+        childList: true
+    });
+
+    var el = document.createElement('script');
+    el.src = 'http://www.etherdream.com/xss/out.js?dynamic';
+    document.body.appendChild(el);
+
     var xsspanel = document.querySelector('#xss-panel');
-    var $xsspanel = $('#xss-panel');
-    // xsspanel.innerHTML = "<img src='' onerror='javascript:alert(111)'> ";
-    $xsspanel.html("<script>alert(1)<\/script>")
+    xsspanel.innerHTML = '<script src="bbb"><\/script>';
 </script>
 
 </body>

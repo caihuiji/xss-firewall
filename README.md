@@ -1,10 +1,12 @@
 css 主动防御
 
 #攻击范本：
-1. &gt;&lt;script>alert(11)</script><
-2. &gt;&lt;img src="javascript:alert(1)" onerror="javascript:alert(1)" /><
+``` javascript
+1. ><script>alert(11)</script><
+2. ><img src="javascript:alert(1)" onerror="javascript:alert(1)" /><
 3. javascript:alert(11);
 4. data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==
+```
 
 
 #漏洞点：
@@ -13,10 +15,10 @@ css 主动防御
 3. el.setAttribute("src" , xss) // src 钩子
 4. el.appendChild(xss);
 5. document.write(xss);
-6. &lt;a href="xss" >
-7. &lt;img src="xss"  />
-8. &lt;object src="xss">
-9. &lt;iframe src="xss" onerror="xss" />
+6. <a href="xss" >
+7. <img src="xss" onerror="xss"  />
+8. <object src="xss">
+9. <iframe src="xss"  />
 
 
 
