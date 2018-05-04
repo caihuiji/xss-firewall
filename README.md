@@ -12,10 +12,10 @@ css 主动防御
 3. el.setAttribute("src" , xss) // src 钩子
 4. el.appendChild(xss);
 5. document.write(xss);
-6. <a href="xss" >
-7. <img src="xss"  />
-8. <object src="xss">
-9. <iframe src="xss" onerror="xss" />
+6. &lt;a href="xss" >
+7. &lt;img src="xss"  />
+8. &lt;object src="xss">
+9. &lt;iframe src="xss" onerror="xss" />
 
 
 
