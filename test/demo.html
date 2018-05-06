@@ -13,20 +13,63 @@
 
 <script>
 
+    var xssReg = /javascript:|data:text\/html;base64,/gi;
+    // 校验属性就是 javascript:alert
+    var checkAttrXss = function (str){
+        if(/^javascript:/gi.test(str) && !/^javascript:;$/gi.test(str) && !/^javascript:void\(0\);$/gi.test(str)  ){
+            return true;
+        }
+        return false;
+    }
     var checkIsXssScript = function (node){
+        var src = node.src;
+        if(!src){
+            return true;
+        }
+
+        return false;
 
     }
 
     var checkIsXssImg = function (node){
+        var src = node.getAttribute("src");
+        if( checkAttrXss(src) ){
+            return true;
+        }
 
+        var hasOnerror = node.getAttribute('onerror');
+        if( hasOnerror){
+            return true;
+        }
+
+        var hasonload = node.getAttribute('onload');
+        if(hasonload){
+            return true;
+        }
+
+        return false;
     }
 
     var checkIsXssIframe = function (node){
+        var src = node.getAttribute("src");
+        if( checkAttrXss(src) ){
+            return true;
+        }
 
+        var hasonload = node.getAttribute('onload');
+        if(hasonload){
+            return true;
+        }
+
+        return false;
     }
 
-    var checkIsXssA = function (node){
-
+    var checkIsXssAnchor = function (node){
+        var href = node.getAttribute("href");
+        if( checkAttrXss(href) ){
+            return true;
+        }
+        return false;
     }
 
     var observer = new MutationObserver(function(mutations) {
@@ -44,11 +87,12 @@
                 }
 
                 if(node.tagName == "IMG" && checkIsXssImg(node) ){
-                    node.onerror = function (){};
+                    node.removeAttribute("onerror" , "javascript:;");
+                    node.removeAttribute("onload" , "javascript:;")
                     console.log('拦截可疑模块:', node);
                 }
 
-                if(node.tagName == "IFRAME" && checkIsXssImg(node) ){
+                if(node.tagName == "IFRAME" && checkIsXssIframe(node) ){
                     node.parentNode.removeChild(node);
                     console.log('拦截可疑模块:', node);
                 }
@@ -58,8 +102,8 @@
                     console.log('拦截可疑模块:', node);
                 }
 
-                if(node.tagName == "A" && checkIsXssA(node) ){
-                    node.setAttribute("src" , "javascript:;")
+                if(node.tagName == "A" && checkIsXssAnchor(node) ){
+                    node.setAttribute("href" , "javascript:;")
                     console.log('拦截可疑模块:', node);
                 }
 
@@ -76,12 +120,59 @@
         childList: true
     });
 
+    document.addEventListener('DOMNodeInserted', function(e) {
+        if (e.target.tagName == "IFRAME") {
+            e.target.removeAttribute("src");
+        }
+        return false;
+    }, true);
+
     var el = document.createElement('script');
     el.src = 'http://www.etherdream.com/xss/out.js?dynamic';
     document.body.appendChild(el);
 
+    var anchor_raw_href = Object.getOwnPropertyDescriptor(window.HTMLAnchorElement.prototype , "href");
+    Object.defineProperty(window.HTMLAnchorElement.prototype , 'href' , {
+        set : function (url){
+            console.log('设置路径:', url);
+            if(!checkAttrXss(url)){
+                anchor_raw_href.apply(this, arguments )
+            }
+        }
+    });
+
+    var img_raw_src = Object.getOwnPropertyDescriptor(window.HTMLImageElement.prototype , "src");
+    Object.defineProperty(window.HTMLAnchorElement.prototype , 'href' , {
+        set : function (url){
+            console.log('设置路径:', url);
+            if(!checkAttrXss(url)){
+                img_raw_src.apply(this, arguments )
+            }
+        }
+    });
+
+    var iframe_raw_src = Object.getOwnPropertyDescriptor(window.HTMLIFrameElement.prototype , "src");
+    Object.defineProperty(window.HTMLAnchorElement.prototype , 'href' , {
+        set : function (url){
+            console.log('设置路径:', url);
+            if(!checkAttrXss(url)){
+                iframe_raw_src.apply(this, arguments )
+            }
+        }
+    });
+
+
+
     var xsspanel = document.querySelector('#xss-panel');
-    xsspanel.innerHTML = '<script src="bbb"><\/script>';
+    xsspanel.innerHTML =
+        '<script >alert(111)<\/script>' +
+        '<img src="sdfsdf.html" onerror="console.log(1)" onload="console.log(2)">' +
+        '<img src="http://fexteam.gz01.bdysite.com/img/avatar/zjcqoo.png" onerror="console.log(1)" onload="console.log(2.1)">' +
+        ' <a href="javascript:;" >not xss</a><br/>' +
+        '<a href="javascript:void(0);" >xss</a><br/>' +
+        '<iframe src="javascript:console.log(3);" onload="console.log(3.1)"></iframe>';
+
+    // xsspanel.innerHTML = '<iframe src="javascript:console.log(3);" onload="console.log(3.1)"></iframe>';
 </script>
 
 </body>
