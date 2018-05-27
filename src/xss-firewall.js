@@ -77,7 +77,7 @@
     var reportArr = [];
     var isReporting = false;
     var isAspectJquery = false;
-	var	IGNORE_FLAG_NAME = 'xf-ignore';
+	var	IGNORE_FLAG_NAME = 'xssfw-ignore';
 
 
     var clearEventTagNAME = {'IMG': true, 'LINK': true, 'VIDEO': true, 'AUDIO': true, 'IFRAME': true};
@@ -137,9 +137,17 @@
 		var orgStr = str;
         str = (str || '').replace(/<iframe.*?>/gi, function ($0, $1) {
             var arr = /\bsrc=['"]([^'"]+)/gi.exec($0);
+			var ignoreAttr = new RegExp('\\b'+IGNORE_FLAG_NAME+'=[\'"]([^\'"]+)', 'gi').exec($0);
+
+			var shouldIgnore = false;
+			if (ignoreAttr && ignoreAttr[1] && ignoreAttr[1] == XSS_FW_CONFIG.ignoreToken){
+				shouldIgnore = true;
+			}
+
+
             if (arr && arr[1] && checkAttrXss(arr[1])) {
                 isMatchXssIframe = true;
-                if (!XSS_FW_CONFIG.reportOnly) {
+                if (!XSS_FW_CONFIG.reportOnly && !shouldIgnore) {
                     return '';
                 }
             }

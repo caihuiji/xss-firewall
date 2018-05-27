@@ -260,7 +260,112 @@
 
 						done();
 					});
-			  })
+			  });
+
+			    describe('use xssfw-ignore , not filter ', function() {
+
+					afterEach(function() {
+						$testPanel.html('')
+					});
+
+				 	it('insert iframe', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<iframe xssfw-ignore="'+XSS_FW_TOKEN+'" src="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
+
+						should.equal(window.iframevalue, innerValue);						
+					});
+
+					it('set iframe src 1', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<iframe xssfw-ignore="'+XSS_FW_TOKEN+'" ></iframe>');
+
+						$testPanel.find("iframe")[0].setAttribute('src' , 'javascript:window.parent.iframevalue='+innerValue);
+						should.equal(window.iframevalue, innerValue);
+						
+					});
+
+					it('set iframe src 2', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<iframe xssfw-ignore="'+XSS_FW_TOKEN+'" ></iframe>');
+
+						$testPanel.find("iframe")[0].src = 'javascript:window.parent.iframevalue='+innerValue;
+						should.not.equal($testPanel.html().indexOf(innerValue), -1);
+						
+					});
+
+				  	it('a has attr', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a xssfw-ignore="'+XSS_FW_TOKEN+'" href="javascript:window.avalue='+innerValue+'"></a>');
+
+						setTimeout(function (){
+							should.not.equal($testPanel.html().indexOf(innerValue), -1);
+							done()
+						},20)
+						
+					});
+
+					it('set a href 1', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a xssfw-ignore="'+XSS_FW_TOKEN+'" ></a>');
+
+						$testPanel.find("a")[0].href = 'javascript:window.parent.iframevalue='+innerValue;
+
+						should.not.equal($testPanel.html().indexOf(innerValue), -1);
+						done();
+						
+					});
+
+					it('set a href 2', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a xssfw-ignore="'+XSS_FW_TOKEN+'" ></a>');
+
+						$testPanel.find("a")[0].setAttribute( 'href' ,'javascript:window.parent.iframevalue='+innerValue);
+
+						should.not.equal($testPanel.html().indexOf(innerValue), -1);
+						done();
+					});
+
+								
+				 	it('img has onerror', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<img xssfw-ignore="'+XSS_FW_TOKEN+'" src="http://bbb.com/test.png" onerror="javascript:window.imgvalue='+innerValue+'"></img>');
+
+						setTimeout(function (){
+							should.not.equal($testPanel.html().indexOf(innerValue), -1);
+							done()
+						},20)
+					});
+
+					it('img has onload', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<img xssfw-ignore="'+XSS_FW_TOKEN+'" src="http://bbb.com/test.png" onload="javascript:window.imgvalue='+innerValue+'"></img>');
+
+						setTimeout(function (){
+							should.not.equal($testPanel.html().indexOf(innerValue), -1);
+							done()
+						},20)
+					});
+
+					it('link has onerror', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<link xssfw-ignore="'+XSS_FW_TOKEN+'" rel="stylesheet" href="http://bbb.com/test.css" onerror="javascript:window.linkvalue='+innerValue+'"><\/script>');
+
+						setTimeout(function (){
+							should.not.equal($testPanel.html().indexOf(innerValue), -1);
+							done();
+						},20)
+					});
+
+					it('link has onload', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<link xssfw-ignore="'+XSS_FW_TOKEN+'" rel="stylesheet" href="http://bbb.com/test.css	" onload="javascript:window.linkvalue='+innerValue+'"><\/script>');
+
+						setTimeout(function (){
+							should.not.equal($testPanel.html().indexOf(innerValue), -1);
+							done();
+						},20);
+					});
+			  });
 
 
 			 setTimeout(function (){
