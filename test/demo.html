@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>xss defense</title>
-    <script src="jquery.min.js"></script>
+    <script src="./jquery.js"></script>
+	<script>
+	XSS_FW_CONFIG = {
+		checkAfterDomReady : true,
+	reportOnly : window.location.href.indexOf('closexssfirewall') == -1 ? false : true,
+	}
+	</script>
+	<script src="./../src/xss-firewall.js"></script>
 </head>
 <body>
-<div id="xss-panel">
 
-</div>
-<script src="./../test/jquery.min.js"></script>
-<script src="./../src/level_top_vest.js"></script>
+<a href="./demo.html">开启xssfirewall</a>
+<a href="./demo.html?closexssfirewall=true">关闭xssfirewall</a>
+
+<br/>
+<br/>
+
+
 
 <script>
+	var $body = $(document.body);
+	setTimeout(function (){
+		
+		$body.append('1. <script>alert(\'script\')<\/script>，插入script 被过滤掉<br>');
 
+		$body.append('2. <a href="javascript:alert(\'a\')" id="a-filter">点击无alert</a><br>');
 
-
-
-    var xsspanel = document.querySelector('#xss-panel');
-   /* xsspanel.innerHTML =
-        '<script >alert(111)<\/script>' +
-        '<img src="sdfsdf.html" onerror="console.log(1)" onload="console.log(2)">' +
-        '<img src="http://fexteam.gz01.bdysite.com/img/avatar/zjcqoo.png" onerror="console.log(1)" onload="console.log(2.1)">' +
-        ' <a href="javascript:;" >not xss</a><br/>' +
-        '<a href="javascript:void(0);" >xss</a><br/>' +
-        '<iframe src="javascript:console.log(3);" onload="console.log(3.1)"></iframe>';*/
-
-       xsspanel.innerHTML = '<iframe src="javascript:console.log(3);" onload="console.log(3.1)"></iframe>';
+		$body.append('3. <img src="http://xxxx.bb/" onerror="alert(\'img\')" /><br>');
+	},500)
 
 </script>
 

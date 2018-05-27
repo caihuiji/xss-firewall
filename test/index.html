@@ -1,0 +1,275 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Test</title>
+		 <link rel="stylesheet" href="./mocha.css" />
+    </head>
+    <body>
+	
+		<a href="./index.html">开启xssfirewall</a>
+		<a href="./index.html?closexssfirewall=true">关闭xssfirewall</a>
+        <div id="mocha"></div>
+		<div style="visibility: hidden;"  id="test-panel">
+
+		</div>
+        <script src="./chai.js"></script>
+        <script src="./mocha.js"></script>
+		<script src="./jquery.js"></script>
+		<script>
+		XSS_FW_CONFIG = {
+			checkAfterDomReady : true,
+			reportOnly : window.location.href.indexOf('closexssfirewall') == -1 ? false : true,
+		}
+		</script>
+		<script src="./../src/xss-firewall.js"></script>
+
+		
+		<script>
+			var $testPanel = $("#test-panel");
+
+
+			var assert = chai.assert;
+			var should = chai.should();
+			var expect = chai.expect;
+			var assert = chai.assert;
+
+			mocha.setup({
+				ui: 'bdd'
+			});
+
+			 describe('hook jquery ', function() {
+
+					afterEach(function() {
+						$testPanel.html('')
+					});
+
+				 	it('$.html', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<script>window.jqueryvalue='+innerValue+';<\/script>');
+
+						should.not.equal(window.jqueryvalue, innerValue);
+						
+					});
+
+					it('$.append', function() {
+						var innerValue = Math.random();
+						$testPanel.append('<script>window.jqueryvalue='+innerValue+';<\/script>');
+
+						should.not.equal(window.jqueryvalue, innerValue);
+						
+					});
+
+					it('$.prepend', function() {
+						var innerValue = Math.random();
+						$testPanel.prepend('<script>window.jqueryvalue='+innerValue+';<\/script>');
+
+						should.not.equal(window.jqueryvalue, innerValue);
+						
+					});
+
+					it('$.before', function() {
+						var innerValue = Math.random();
+
+						$testPanel.html('<div id="placeholer"></div>');
+						$("#placeholer").before('<script>window.jqueryvalue='+innerValue+';<\/script>');
+
+						should.not.equal(window.jqueryvalue, innerValue);
+						
+					});
+
+					it('$.after', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<div id="placeholer"></div>');
+						$("#placeholer").before('<script>window.jqueryvalue='+innerValue+';<\/script>');
+
+						should.not.equal(window.jqueryvalue, innerValue);
+						
+					});
+			 })
+
+			  describe('hook iframe ', function() {
+
+					afterEach(function() {
+						$testPanel.html('')
+					});
+
+				 	it('insert iframe', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<iframe src="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
+
+						should.not.equal(window.iframevalue, innerValue);						
+					});
+
+					it('set iframe src 1', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<iframe ></iframe>');
+
+						$testPanel.find("iframe")[0].setAttribute('src' , 'javascript:window.parent.iframevalue='+innerValue);
+						should.not.equal(window.iframevalue, innerValue);
+						
+					});
+
+					it('set iframe src 2', function() {
+						var innerValue = Math.random();
+						$testPanel.html('<iframe ></iframe>');
+
+						$testPanel.find("iframe")[0].src = 'javascript:window.parent.iframevalue='+innerValue;
+						should.equal($testPanel.html().indexOf(innerValue), -1);
+						
+					});
+	
+			 })
+
+
+		
+			   describe('hook attr ', function() {
+
+					afterEach(function() {
+						$testPanel.html('')
+					});
+
+				 	it('a has attr', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a href="javascript:window.avalue='+innerValue+'"></a>');
+
+						setTimeout(function (){
+							should.equal($testPanel.html().indexOf(innerValue), -1);
+							done()
+						},20)
+						
+					});
+
+					it('set a href 1', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a ></a>');
+
+						$testPanel.find("a")[0].href = 'javascript:window.parent.iframevalue='+innerValue;
+
+						should.equal($testPanel.html().indexOf(innerValue), -1);
+						done();
+						
+					});
+
+					it('set a href 2', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a ></a>');
+
+						$testPanel.find("a")[0].setAttribute( 'href' ,'javascript:window.parent.iframevalue='+innerValue);
+
+						should.equal($testPanel.html().indexOf(innerValue), -1);
+						done();
+					});
+
+								
+				 	it('img has onerror', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<img src="http://bbb.com/test.png" onerror="javascript:window.imgvalue='+innerValue+'"></img>');
+
+						setTimeout(function (){
+							should.equal($testPanel.html().indexOf(innerValue), -1);
+							done()
+						},20)
+					});
+
+					it('img has onload', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<img src="http://bbb.com/test.png" onload="javascript:window.imgvalue='+innerValue+'"></img>');
+
+						setTimeout(function (){
+							should.equal($testPanel.html().indexOf(innerValue), -1);
+							done()
+						},20)
+					});
+
+					it('link has onerror', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<link rel="stylesheet" href="http://bbb.com/test.css" onerror="javascript:window.linkvalue='+innerValue+'"><\/script>');
+
+						setTimeout(function (){
+							should.equal($testPanel.html().indexOf(innerValue), -1);
+							done();
+						},20)
+					});
+
+					it('link has onload', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<link rel="stylesheet" href="http://bbb.com/test.css	" onload="javascript:window.linkvalue='+innerValue+'"><\/script>');
+
+						setTimeout(function (){
+							should.equal($testPanel.html().indexOf(innerValue), -1);
+							done();
+						},20);
+					});
+			 })
+
+			  describe('after hook , other elment set attr should yes  ', function() {
+
+				  	it('set a other attr ', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<a ></a><iframe><iframe>');
+
+						var a= $testPanel.find("a")[0];
+						var iframe = $testPanel.find("iframe")[0];
+
+						a.setAttribute( 'data-test' ,innerValue +1);
+						should.not.equal($testPanel.html().indexOf(innerValue +1), -1);
+
+						a.setAttribute( 'data-test' ,innerValue+2);
+						should.not.equal($testPanel.html().indexOf(innerValue +2), -1);
+
+						a.setAttribute( 'data-test1' ,innerValue+3);
+						should.not.equal($testPanel.html().indexOf(innerValue +3), -1);
+
+						a.setAttribute( 'href' , 'window.parent.testvalue='+ (innerValue + 4));
+						should.not.equal($testPanel.html().indexOf(innerValue + 4), -1);
+
+						a.href = 'window.parent.testvalue='+ (innerValue + 5);
+						should.not.equal($testPanel.html().indexOf(innerValue + 5), -1);
+
+						iframe.setAttribute( 'src' , 'window.parent.testvalue='+ (innerValue + 6));
+						should.not.equal($testPanel.html().indexOf(innerValue + 6), -1);
+
+						iframe.src = 'window.parent.testvalue='+ (innerValue + 7);
+						should.not.equal($testPanel.html().indexOf(innerValue + 7), -1);
+
+
+						done();
+					});
+
+					it('set other element attr', function(done) {
+						var innerValue = Math.random();
+						$testPanel.html('<div ></div>');
+
+						var div = $testPanel.find("div")[0];
+
+						div.setAttribute( 'data-test' ,innerValue +1);
+						should.not.equal($testPanel.html().indexOf(innerValue +1), -1);
+
+						div.setAttribute( 'data-test' ,innerValue+2);
+						should.not.equal($testPanel.html().indexOf(innerValue +2), -1);
+
+						div.setAttribute( 'data-test1' ,innerValue+3);
+						should.not.equal($testPanel.html().indexOf(innerValue +3), -1);
+
+						div.setAttribute( 'id' ,innerValue+4);
+						should.not.equal($testPanel.html().indexOf(innerValue +4), -1);
+
+						div.id = innerValue+5;
+						should.not.equal($testPanel.html().indexOf(innerValue +5), -1);
+
+
+						done();
+					});
+			  })
+
+
+			 setTimeout(function (){
+				 mocha.run();
+			 },500)
+
+		
+
+
+		</script>
+    </body>
+</html>

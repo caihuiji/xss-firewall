@@ -1,7 +1,7 @@
 /* eslint accessor-pairs: "off" */
 
 /**
- *  level-top-vest --  前端 xss-防火墙
+ *  xss-firewall --  xss 防火墙
  */
 
 (function () {
@@ -11,31 +11,43 @@
         return;
     }
 
+	
+	var XSS_FW_CONFIG = {
+		reportOnly: true,
+		reportUrl : '',
+		reportBefore : false,
+		checkAfterDomReady : true,
+		ignoreToken: 'xssfw-token-' + Math.random(),
+	};
 
-    window.XSS_MONITOR_REPORT_ONLY =  !!window.XSS_MONITOR_REPORT_ONLY  ;
-    window.XSS_MONITOR_REPORT_URL = window.XSS_MONITOR_REPORT_URL ;
-    var reportArr = [];
-    var isReporting = false;
-    var isAspectJquery = false;
 
+	if (window.XSS_FW_CONFIG){
+		Object.keys(window.XSS_FW_CONFIG).forEach(function (key ){
+			XSS_FW_CONFIG[key] = window.XSS_FW_CONFIG[key];
+		});
+	}
 
-    window.XSS_MONITOR_REPORT_LOG = function (type, domStr , dom) {
-        if( dom &&  dom.hasAttribute('ignore-xss-monitor')) {
-            return ;
-        }
+	window.XSS_FW_TOKEN = XSS_FW_CONFIG.ignoreToken;
+	
+	var reportSubmit = function (type, domStr , dom) {
         console.log('detect xss type :', type, ', dom :', domStr);
 
+		if (XSS_FW_CONFIG.reportBefore){
+			var reportBeforeResult = XSS_FW_CONFIG.reportBefore(type , domStr , dom);
+			if (reportBeforeResult) {
+				reportBeforeResult.type && (type = reportBeforeResult.type);
+				reportBeforeResult.domStr && (domStr = reportBeforeResult.domStr);
+			}
+		}
+
+        if(isReporting || !XSS_FW_CONFIG.reportUrl){
+            return ;
+        }
+
+
         reportArr.push({type: type , domStr: domStr , dom: dom});
-
-        if(isReporting){
-            return ;
-        }
-
-        if(!window.XSS_MONITOR_REPORT_URL){
-            return ;
-        }
-
         isReporting = true;
+
         setTimeout(function (){
             var submitReportArr = reportArr ;
             reportArr = [];
@@ -43,16 +55,29 @@
             var postData = [];
             for(var i= 0;i<submitReportArr.length ; i++) {
                 var reportItem = submitReportArr[i];
-                postData.push({type: reportItem.type || ''  , domStr : (reportItem.domStr||'').substr(0,100) , url : window.location.href });
+                postData.push({type: reportItem.type || ''  , domStr : (reportItem.domStr||'').replace(/[\n\t]/gi, '').substr(0,500) , url : window.location.href });
             }
 
             var xmlHttp = new XMLHttpRequest() ;
-            xmlHttp.open("POST", window.XSS_MONITOR_REPORT_URL , true);
+            xmlHttp.open("POST", XSS_FW_CONFIG.reportUrl , true);
             xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xmlHttp.send('xss-monitor=' + JSON.stringify(postData));
 
-        },3000)
-    };
+            xmlHttp.onreadystatechange = function (){
+                if (xmlHttp.readyState == 4) {
+                    isReporting = false;
+                }
+            }
+
+        },3000);
+    }
+
+	
+
+    var reportArr = [];
+    var isReporting = false;
+    var isAspectJquery = false;
+	var	IGNORE_FLAG_NAME = 'xf-ignore';
 
 
     var clearEventTagNAME = {'IMG': true, 'LINK': true, 'VIDEO': true, 'AUDIO': true, 'IFRAME': true};
@@ -62,12 +87,16 @@
         if (/^javascript:/gi.test(str) &&
             !/^javascript:;?$/gi.test(str) &&
             !/^javascript:void\(0\);?$/gi.test(str) &&
+            !/^javascript:;?window\.location\.reload\(\);?$/gi.test(str) &&
+            !/^javascript:.?history\.go\(-1\);?$/gi.test(str) &&
+            !/^javascript:history\.back\(\);?$/gi.test(str) &&
             !/^javascript:false;?$/gi.test(str)
         ) {
             return true;
         }
         return false;
     };
+
 
     var checkIsXssAnchor = function (node) {
         var href = node.getAttribute('href');
@@ -79,27 +108,38 @@
 
     var clearEvent = function (node) {
         if (node.hasAttribute('onerror')) {
-            window.XSS_MONITOR_REPORT_LOG('has_onerror', node.outerHTML , node);
+            reportSubmit('has_onerror', node.outerHTML , node);
         }
-        if (node.hasAttribute('onload')) {
-            window.XSS_MONITOR_REPORT_LOG('has_onload', node.outerHTML , node);
+        if (node.hasAttribute('onload') ) {
+            reportSubmit('has_onload', node.outerHTML , node);
         }
 
 
-        if (!window.XSS_MONITOR_REPORT_ONLY) {
+        if (!XSS_FW_CONFIG.reportOnly && !shouldIgnore(node)) {
             node.removeAttribute('onerror');
             node.removeAttribute('onload');
         }
     };
 
+	var shouldIgnore = function (dom){
+		if (dom){
+			var ignoreValue = dom.getAttribute(IGNORE_FLAG_NAME);
+			if (ignoreValue == XSS_FW_CONFIG.ignoreToken) {
+				return true;
+			}
+		}
+		return false;
+	}
+
     // 存在内敛的 iframe src 不是http , 过滤
     var filterIframe = function (str) {
         var isMatchXssIframe = false;
-        (str || '').replace(/<iframe.*?>/gi, function ($0, $1) {
-            var arr = /src=['"]([^'"]+)/gi.exec($0);
-            if (arr && checkAttrXss(arr[1])) {
+		var orgStr = str;
+        str = (str || '').replace(/<iframe.*?>/gi, function ($0, $1) {
+            var arr = /\bsrc=['"]([^'"]+)/gi.exec($0);
+            if (arr && arr[1] && checkAttrXss(arr[1])) {
                 isMatchXssIframe = true;
-                if (!window.XSS_MONITOR_REPORT_ONLY) {
+                if (!XSS_FW_CONFIG.reportOnly) {
                     return '';
                 }
             }
@@ -107,7 +147,7 @@
         });
 
         if (isMatchXssIframe) {
-            window.XSS_MONITOR_REPORT_LOG('filterIframe', str);
+            reportSubmit('filterIframe', orgStr);
         }
 
         return str;
@@ -117,10 +157,17 @@
     var filterScript = function (str) {
 
         var isMatchXssScript = false;
-        (str || '').replace(/<script.*?>/gi, function ($0) {
-            if (!/\bsrc=/gi.test($0)) {
+		var orgStr = str;
+        str = (str || '').replace(/<script.*?>/gi, function ($0) {
+            var arr = /\btype=['"]([^'"]+)/gi.exec($0);
+
+            if(arr && arr[1] && arr[1] != 'text/javascript' ){
+                return $0;
+            }
+
+            if (!/\bsrc=/gi.test($0) ) {
                 isMatchXssScript = true;
-                if (!window.XSS_MONITOR_REPORT_ONLY) {
+                if (!XSS_FW_CONFIG.reportOnly) {
                     return '';
                 }
             }
@@ -128,7 +175,7 @@
         });
 
         if (isMatchXssScript) {
-            window.XSS_MONITOR_REPORT_LOG('filterScript', str);
+            reportSubmit('filterScript', orgStr);
         }
 
         return str;
@@ -140,13 +187,13 @@
             var node = nodes[i];
 
             // 这些tag 不能存在在内敛代码的事件，存在攻击风险
-            if (clearEventTagNAME[node.tagName]) {
+            if (clearEventTagNAME[node.tagName] ) {
                 clearEvent(node);
             }
 
             if (node.tagName == 'A' && checkIsXssAnchor(node)) {
-                window.XSS_MONITOR_REPORT_LOG('filterHref', node.outerHTML , node);
-                if (!window.XSS_MONITOR_REPORT_ONLY) {
+                reportSubmit('filterHref', node.outerHTML , node);
+                if (!XSS_FW_CONFIG.reportOnly && !shouldIgnore(node)) {
                     node.setAttribute('href', 'javascript:;');
                 }
                 // node.setAttribute("href" , "javascript:;")
@@ -154,7 +201,11 @@
 
             // 内敛script 监控就可以
             if (node.tagName == 'SCRIPT' && !node.src && (!node.type || node.type == 'text/javascript')) {
-                window.XSS_MONITOR_REPORT_LOG('has_innerScript', node.outerHTML , node);
+				//chrome 插件的 content-script 能检测到，但是不在dom中，用这种方式忽略
+				if (!node.ownerDocument.body.contains(node)){
+					 reportSubmit('has_innerScript', node.outerHTML , node);
+				}
+               
             }
 
             if (node.childNodes && node.childNodes.length) {
@@ -163,74 +214,67 @@
         }
     };
 
-    var speedReport = [];
-    var isSpeedReporting = false;
-    var observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
 
-            var startDate = new Date();
-            detectNode(mutation.addedNodes);
-            var spendTime = new Date - startDate;
-            // console.log("detectNode : " + spendTime + " ms");
+    var htmlElementHook = function () {
+		var attrHook = function ( name , value ,orgAttrFunc , node){
+			if (!checkAttrXss(value)) {
+				orgAttrFunc.apply(node,  [name, value ]);
+			} else {
+				 if (XSS_FW_CONFIG.reportOnly || shouldIgnore(node)) {
+					 orgAttrFunc.apply( node, [name, value ]);
+				 } 
+				 reportSubmit('filterSetAttribute _' + name, node.outerHTML , node);
+			}
+		}
 
-            speedReport.push(spendTime);
-
-            if (isSpeedReporting){
-                return ;
-            }
-            isSpeedReporting = true;
-
-            setTimeout(function (){
-
-                while(speedReport.length){
-                    var sumibtReport = speedReport.splice(0,20);
-                    var img = new Image();
-                    img.src = 'https://mail.qq.com/xly_report/report?q=st%3Aspeed%3Dk%3D78501976%26v%3D' + sumibtReport.join("&q=st%3Aspeed%3Dk%3D78501976%26v%3D") + '&_t=' + Math.random();
-                }
-
-                speedReport = [];
-                isSpeedReporting = false;
-
-            },3000)
-
-        });
-    });
-
-
-    var injectMonitor = function () {
+		// a
         var anchor_raw_href = Object.getOwnPropertyDescriptor(window.HTMLAnchorElement.prototype, 'href');
         Object.defineProperty(window.HTMLAnchorElement.prototype, 'href', {
             set: function (url) {
                 if (!checkAttrXss(url)) {
                     anchor_raw_href.set.apply(this, arguments);
                 } else {
-                    window.XSS_MONITOR_REPORT_LOG('filterHref', this.outerHTML , this);
+					 if (XSS_FW_CONFIG.reportOnly || shouldIgnore(this)) {
+	                     anchor_raw_href.set.apply(this, arguments);
+					 }
+					 reportSubmit('filterHref', this.outerHTML , this);
                 }
             }
         });
 
+		//img
         var img_raw_src = Object.getOwnPropertyDescriptor(window.HTMLImageElement.prototype, 'src');
         Object.defineProperty(window.HTMLImageElement.prototype, 'src', {
             set: function (url) {
                 if (!checkAttrXss(url)) {
                     img_raw_src.set.apply(this, arguments);
                 } else {
-                    window.XSS_MONITOR_REPORT_LOG('filterImgSrc', this.outerHTML , this);
+					 if (XSS_FW_CONFIG.reportOnly || shouldIgnore(this)) {
+	                     img_raw_src.set.apply(this, arguments);
+					 }
+                    reportSubmit('filterImgSrc', this.outerHTML , this);
                 }
             }
         });
 
+	
+		// iframe
         var iframe_raw_src = Object.getOwnPropertyDescriptor(window.HTMLIFrameElement.prototype, 'src');
         Object.defineProperty(window.HTMLIFrameElement.prototype, 'src', {
             set: function (url) {
                 if (!checkAttrXss(url)) {
                     iframe_raw_src.set.apply(this, arguments);
                 } else {
-                    window.XSS_MONITOR_REPORT_LOG('filterIframeSrc', this.outerHTML , this);
+					  if (XSS_FW_CONFIG.reportOnly || shouldIgnore(this)) {
+	                     iframe_raw_src.set.apply(this, arguments);
+					 }
+                    reportSubmit('filterIframeSrc', this.outerHTML , this);
                 }
             }
         });
 
+
+		//element
         var element_raw_innerHTML = Object.getOwnPropertyDescriptor(window.Element.prototype, 'innerHTML');
         Object.defineProperty(window.Element.prototype, 'innerHTML', {
             set: function (value) {
@@ -241,24 +285,36 @@
                 element_raw_innerHTML.set.apply(this, arguments);
             }
         });
+
+		var el_setAttribute = window.Element.prototype.setAttribute;
+		window.Element.prototype.setAttribute = function (name , value){
+			if(this.tagName == 'A' && name == 'href'){
+				attrHook(name , value , el_setAttribute , this);
+			}else if ( this.tagName == 'IFRAME' && name == 'src' ){
+				attrHook(name , value , el_setAttribute , this);
+			}else {
+				el_setAttribute.apply( this , arguments);
+			}
+		}
+	
     };
 
-    var aspectJquery = function () {
+    var jqueryHook = function () {
         if (!window.jQuery || !window.$ || isAspectJquery) {
             return;
         }
 
-        /*   var orgFnHTML = $.fn.html ;
+          /*  
+		  //jquery.html 也是调用了 append，无须替换
+		  var orgFnHTML = $.fn.html ;
            $.fn.html = function (value){
                if(typeof value != 'string'){
                    return orgFnHTML.apply(this , arguments);
                }
-
                value = filterScript(value);
                value = filterIframe(value);
-
                return orgFnHTML.apply(this , arguments);;
-           } */
+           }*/ 
 
 
         var orgFnAppend = $.fn.append;
@@ -310,22 +366,39 @@
         };
         isAspectJquery = true;
     };
-    /*
-        observer.observe(document, {
-            subtree: true,
-            childList: true
-        });
-        injectMonitor();
-        aspectJquery();*/
 
-    document.addEventListener('DOMContentLoaded', function () {
-        observer.observe(document, {
+
+	//init
+
+	 var observer = new MutationObserver(function (mutations) {
+		mutations.forEach(function (mutation) {
+
+            //var startDate = new Date();
+            detectNode(mutation.addedNodes);
+           // var spendTime = new Date - startDate;
+            // console.log("detectNode : " + spendTime + " ms");
+
+        });
+    });
+
+	var init = function (){
+		observer.observe(document, {
             subtree: true,
             childList: true
         });
-        injectMonitor();
-        aspectJquery();
-    }, false);
+        htmlElementHook();
+        jqueryHook();
+	}
+
+	if(!XSS_FW_CONFIG.checkAfterDomReady){
+		init();
+	} else {
+		document.addEventListener('DOMContentLoaded', function () {
+			init();
+		}, false);
+	}
+
+  
 
 
 })(window);
