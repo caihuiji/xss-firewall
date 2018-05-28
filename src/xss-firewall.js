@@ -210,7 +210,7 @@
             // 内敛script 监控就可以
             if (node.tagName == 'SCRIPT' && !node.src && (!node.type || node.type == 'text/javascript')) {
 				//chrome 插件的 content-script 能检测到，但是不在dom中，用这种方式忽略
-				if (!node.ownerDocument.body.contains(node)){
+				if (node.ownerDocument.body.contains(node)){
 					 reportSubmit('has_innerScript', node.outerHTML , node);
 				}
                
