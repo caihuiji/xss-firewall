@@ -390,11 +390,11 @@
     });
 
 	var init = function (){
-	if ((document.cookie || '').indexOf("xss-firewall-ignore=1;") != -1){
-            console.log('%cDetected \'xss-firewall-ignore=1\' in cookie , you can clear cookie to restart xss-firewall. \n%c@author https://github.com/caihuiji/xss-firewall' , 'color:red;font-size:18px' , 'color:black;font-size:18px');
+	 if ((window.location.search || '').indexOf("xss-firewall-ignore=1") != -1){
+            console.log('%cDetected parameter "xss-firewall-ignore=1" in url  \n%c@author https://github.com/caihuiji/xss-firewall' , 'color:red;font-size:18px' , 'color:black;font-size:18px');
             return ;
         } else {
-            console.log('%cIn the dev environment , you can set "document.cookie=\'xss-firewall-ignore=1\'" to close xss-firewall\n%c@author https://github.com/caihuiji/xss-firewall' , 'color:red;font-size:18px' , 'color:black;font-size:18px');
+            console.log('%cIn the dev environment , you can add parameter "xss-firewall-ignore=1" into your url to close xss-firewall\n%c@author https://github.com/caihuiji/xss-firewall' , 'color:red;font-size:18px' , 'color:black;font-size:18px');
         }
 	observer.observe(document, {
             subtree: true,
