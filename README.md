@@ -28,14 +28,14 @@ window.XSS_FW_CONFIG = {
 ## 为什么可以拦截
 
 xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原因：
-1. 插入html ，l忘记了 htmlencode
-2. 设置 <a href > 值，或则 <iframe src> 时候，后台没有严格校验，被插入了 javascript:xxxx
+1. 插入html ，忘记了 htmlencode
+2. 设置 ```<a href >``` 值，或则 ```<iframe src>``` 时候，后台没有严格校验，被插入了 javascript:xxxx
 
 
 假设现在漏洞已经产生，如何拦截:
-1. 模板带有 <script> 标签 ，会当做XSS 攻击代码过滤掉上报
-2. 模板带有 <iframe src="javascript:xxx" 会拦截， 但是正常的src 不会拦截
-3. 模板带有 <img src="xxx" onerror="javascript:xxx" onload , onerror onload 会过滤，
+1. 模板带有 ```<script> ```标签 ，会当做XSS 攻击代码过滤掉上报
+2. 模板带有 ```<iframe src="javascript:xxx"``` 会拦截， 但是正常的src 不会拦截
+3. 模板带有 ```<img src="xxx" onerror="javascript:xxx"``` onload , onerror onload 会过滤，
 4. 模板带有 ```<a href="javascript:xxxx" ``` ,  href 属性 会过滤掉
   
 来看看以下的攻击范本:
