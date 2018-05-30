@@ -82,7 +82,7 @@
 
     var clearEventTagNAME = {'IMG': true, 'LINK': true, 'VIDEO': true, 'AUDIO': true, 'IFRAME': true};
 
-    // 校验属性就是可执行的 javascript
+    // 校验属性是否可执行的 javascript
     var checkAttrXss = function (str) {
         if (/^javascript:/gi.test(str) &&
             !/^javascript:;?$/gi.test(str) &&
