@@ -24,8 +24,9 @@ window.XSS_FW_CONFIG = {
 ```
 
 **接收上报**
-目前上报使用xhr2 的跨域post 提交，如果是跨域请求，请在服务器端开启跨域。
-上报格式如下下：
+
+目前上报使用xhr2 的跨域post提交，如果是跨域请求，请在服务器端开启跨域。
+上报格式如下：
 ```javascript
 //type 
 // has_innerScript - 存在内敛的script
