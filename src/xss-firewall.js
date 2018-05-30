@@ -390,7 +390,13 @@
     });
 
 	var init = function (){
-		observer.observe(document, {
+	if ((document.cookie || '').indexOf("xss-firewall-ignore=1;") != -1){
+            console.log('%cDetected \'xss-firewall-ignore=1\' in cookie , you can clear cookie to restart xss-firewall. \n%c@author https://github.com/caihuiji/xss-firewall' , 'color:red;font-size:18px' , 'color:black;font-size:18px');
+            return ;
+        } else {
+            console.log('%cIn the dev environment , you can set "document.cookie=\'xss-firewall-ignore=1\'" to close xss-firewall\n%c@author https://github.com/caihuiji/xss-firewall' , 'color:red;font-size:18px' , 'color:black;font-size:18px');
+        }
+	observer.observe(document, {
             subtree: true,
             childList: true
         });
