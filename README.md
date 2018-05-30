@@ -12,7 +12,7 @@ xss-firewall  -  前端xss防火墙
 window.XSS_FW_CONFIG = {
 	reportOnly: true,                               // 只上报，不拦截
 	reportUrl : '',                                 // 上报的URL
-	reportBefore : false,                           // 上报之前的回调
+	reportBefore : function(){}                     // 上报之前的回调
 	checkAfterDomReady : true,                      // 是否在domready 后开始检测
 							(由于使用了MutationObserver 扫描，建议保持默认值)
 	ignoreToken: 'xssfw-token-' + Math.random(),    // 忽略属性检查的token 
