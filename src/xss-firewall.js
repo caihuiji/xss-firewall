@@ -30,7 +30,7 @@
 	window.XSS_FW_TOKEN = XSS_FW_CONFIG.ignoreToken;
 	
 	var reportSubmit = function (type, domStr , dom) {
-        console.log('detect xss type :', type, ', dom :', domStr);
+        console.log('%cdetect xss %ctype: ' + type + ' dom: ' + domStr , 'color:red' , 'color:black' );
 
 		if (XSS_FW_CONFIG.reportBefore){
 			var reportBeforeResult = XSS_FW_CONFIG.reportBefore(type , domStr , dom);
