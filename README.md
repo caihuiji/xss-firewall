@@ -1,26 +1,52 @@
-css 主动防御
+xss 防火墙
+-----
 
-#背景
-目前防范XSS 攻击，需要开发者在渲染HTML模板的时候对变量进行转义，然而总会存在忘记转义的情况下。我们无法保证每个开发者都能记得转义，但是我们能受到XSS 攻击的时候，进行拦截和上报。
+##背景 
+>目前防范XSS 攻击，需要开发者在渲染HTML模板的时候对变量进行转义，然而总会存在忘记转义的情况下。我们无法保证每个开发者都能记得转义，但是我们能受到XSS 攻击的时候，进行拦截和上报。
 
-#适用场景
-浏览器
-ie9+ , chrome , firefox
-适合架构
-1. view-logic 分离， 内敛的 script 不可编写，否则会当做XSS 攻击代码过滤掉上报
-2. dom level 1 事件（内敛事件）不可存在，否则会当做xss攻击过滤掉
+**适用场景**
+1. 浏览器
+支持html5 的浏览器( ie9+)
 
-注意：
-xss-firewall 只做最后一道防线，请确保在此之前 已经启动html转义和csp 
+## Getting Started
 
-demo : 
-#攻击范本：
+**如何使用**
+```
+//全局配置
+window.XSS_FW_CONFIG = {
+		reportOnly: true,                               // 只上报，不拦截
+		reportUrl : '',                                 // 上报的URL
+		reportBefore : false,                           // 上报之前的回调
+		checkAfterDomReady : true,                      // 是否在domready 后开始检测(由于使用了MutationObserver 扫描，建议保持默认值)
+		ignoreToken: 'xssfw-token-' + Math.random(),    // 忽略属性检查的token 
+	};
+<script src='./xss-firewall.js ></script>
+```
+
+## 为什么可以拦截
+
+
+**漏洞的几个原因**
+
+1. 插入html ，自行拼接html忘记了 htmlencode
+2. 设置属性，没有考虑到 javascript:xxxx
+3. 模板在属性里面渲染数据， 没有考虑到  javascript:
+
+**可拦截哪些xss攻击**
+
+1. 模板带有 <script> 标签 ，会当做XSS 攻击代码过滤掉上报
+2. 模板带有 <iframe src="javascript:xxx" 会拦截， 但是正常的src 不会拦截
+3. 模板带有 <img src="xxx" onerror="javascript:xxx" onload , onerror onload 会过滤，
+4. 模板带有 <a href="javascript:xxxx" ,  href 属性 会过滤掉
+  
+以上代码不过滤，都有可能留有漏洞，来看看以下的攻击范本:
 ``` javascript
 1. ><script>alert(11)</script><
-2. ><img src="javascript:alert(1)" onerror="javascript:alert(1)" /><
-3. javascript:alert(11);
-4. data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==
+2. ><img src="test1111.png" onerror="javascript:alert(1)" /><
+3. <a href="javascript:alert(11);" 
+4. iframe src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="
 ```
+
 
 
 #漏洞点：
@@ -35,21 +61,6 @@ demo :
 9. <iframe src="javascript:xss"  />
 
 
-
-#生成漏洞的几个原因：
-1. 插入html ，自行拼接html忘记了 htmlencode
-2. 设置属性，没有考虑到 javascript:
-3. 模板在属性里面渲染数据， 没有考虑到  javascript:
-
-
-
-#内敛html 拦截
-1. jquery.html 替换
-2. innerHTMl  (script 不能执行)
-
-插入的DOM时候:html属性中有存在 src,href,onload,onerror 攻击
-其中， src , href 可以设置 javascript 协议，即为攻击（非 javascript:;  javascript:void(0);）
-onload onerror、onclick ....  应该是不允许的， 所以即为攻击(都改用在 javascript addEventListener 主动监听 )
 
 
 
