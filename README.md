@@ -40,7 +40,7 @@ var submitArray = [{type :'has_innerScript' , domStr :'<a href="javascript:alert
 post( 'xss-monitor=' + JSON.stringfy(submitArray))
 ```
 
-> 更详细使用方式可以查看 ```test/demo.html```
+更详细使用方式可以查看 ```test/demo.html```
 
 ### 浏览器支持
 
