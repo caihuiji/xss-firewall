@@ -5,7 +5,7 @@ xss 防火墙  -  前端xss防火墙
 目前防范XSS 攻击，需要开发者在渲染HTML模板的时候对变量进行转义，然而总会存在忘记转义的情况下。我们无法保证每个开发者都能记得转义，但是我们能受到XSS 攻击的时候，进行拦截和上报。
 
 
-## Getting Started
+### Getting Started
 
 **如何使用**
 ```
@@ -23,12 +23,12 @@ window.XSS_FW_CONFIG = {
 <script src='./xss-firewall.js ></script>
 ```
 
-## 浏览器支持
+### 浏览器支持
 
 支持 html5 的浏览器 
 ie9+
 
-## 为什么可以拦截
+### 为什么可以拦截
 
 1. xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原因：
 - 插入html ，忘记了 htmlencode
@@ -49,6 +49,15 @@ ie9+
 4. iframe src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="
 ```
 
+4. 是否可以忽略检查
+
+属性是可运行代码的，可以参考以下代码进行忽略检查，
+```javascript
+var divEl = document.querySelector('#test');
+var xssfwtoken = window.XSS_FW_TOKEN;
+divEl.innerHTML = '<a href="javascript:window.history.go(-2)" xssfw-ignore="'+xssfwtoken+'">';
+```
+但是 ```<script>``` 是不可以忽略检查的
 
 
 
