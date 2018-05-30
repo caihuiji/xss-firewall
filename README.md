@@ -1,5 +1,19 @@
 css 主动防御
 
+#背景
+目前防范XSS 攻击，需要开发者在渲染HTML模板的时候对变量进行转义，然而总会存在忘记转义的情况下。我们无法保证每个开发者都能记得转义，但是我们能受到XSS 攻击的时候，进行拦截和上报。
+
+#适用场景
+浏览器
+ie9+ , chrome , firefox
+适合架构
+1. view-logic 分离， 内敛的 script 不可编写，否则会当做XSS 攻击代码过滤掉上报
+2. dom level 1 事件（内敛事件）不可存在，否则会当做xss攻击过滤掉
+
+注意：
+xss-firewall 只做最后一道防线，请确保在此之前 已经启动html转义和csp 
+
+demo : 
 #攻击范本：
 ``` javascript
 1. ><script>alert(11)</script><
