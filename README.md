@@ -12,14 +12,16 @@ xss 防火墙
 **如何使用**
 ```
 //全局配置
+
 window.XSS_FW_CONFIG = {
-		reportOnly: true,                               // 只上报，不拦截
-		reportUrl : '',                                 // 上报的URL
-		reportBefore : false,                           // 上报之前的回调
-		checkAfterDomReady : true,                      // 是否在domready 后开始检测
-								(由于使用了MutationObserver 扫描，建议保持默认值)
-		ignoreToken: 'xssfw-token-' + Math.random(),    // 忽略属性检查的token 
-	};
+	reportOnly: true,                               // 只上报，不拦截
+	reportUrl : '',                                 // 上报的URL
+	reportBefore : false,                           // 上报之前的回调
+	checkAfterDomReady : true,                      // 是否在domready 后开始检测
+							(由于使用了MutationObserver 扫描，建议保持默认值)
+	ignoreToken: 'xssfw-token-' + Math.random(),    // 忽略属性检查的token 
+};
+
 <script src='./xss-firewall.js ></script>
 ```
 
@@ -34,7 +36,7 @@ xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原�
 1. 模板带有 <script> 标签 ，会当做XSS 攻击代码过滤掉上报
 2. 模板带有 <iframe src="javascript:xxx" 会拦截， 但是正常的src 不会拦截
 3. 模板带有 <img src="xxx" onerror="javascript:xxx" onload , onerror onload 会过滤，
-4. 模板带有 <a href="javascript:xxxx" ,  href 属性 会过滤掉
+4. 模板带有 ```<a href="javascript:xxxx" ``` ,  href 属性 会过滤掉
   
 来看看以下的攻击范本:
 ``` javascript
