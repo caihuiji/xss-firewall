@@ -38,7 +38,8 @@ window.XSS_FW_CONFIG = {
 // has_onerror,has_onload 		   - 过滤了 onerror , onload
 
 var submitArray = [{type :'has_script' , domStr :'<a href="javascript:alert(111)"' , url : 'http://test.com'  }] ;
-xss-monitor=JSON.stringfy(submitArray);
+
+post( 'xss-monitor=' + JSON.stringfy(submitArray))
 ```
 
 > 更详细使用方式可以查看 ```test/demo.html```
