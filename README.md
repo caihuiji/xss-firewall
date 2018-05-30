@@ -44,7 +44,7 @@ post( 'xss-monitor=' + JSON.stringfy(submitArray))
 
 ### 浏览器支持
 
-常用的chrome内核浏览器和ie9+
+ie9+和其他常用的浏览器
 
 
 ## 为什么可以拦截
