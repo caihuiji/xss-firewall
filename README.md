@@ -28,30 +28,30 @@ window.XSS_FW_CONFIG = {
 支持 html5 的浏览器 
 ie9+
 
-### 为什么可以拦截
 
-1. xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原因：
+## 为什么可以拦截
+
+#### 漏洞原因
+xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原因：
 - 插入html ，忘记了 htmlencode
 - 设置 ```<a href >``` 值，或则 ```<iframe src>``` 时候，后台没有严格校验，被插入了 javascript:xxxx
 
-
-2. 假设现在漏洞已经产生，如何拦截:
+#### 拦截方式
+1. 假设现在漏洞已经产生，如何拦截:
 - 模板带有 ```<script> ```标签 ，会当做XSS 攻击代码过滤掉上报
 - 模板带有 ```<iframe src="javascript:xxx"``` 会拦截， 但是正常的src 不会拦截
 - 模板带有 ```<img src="xxx" onerror="javascript:xxx"``` onload , onerror onload 会过滤，
 - 模板带有 ```<a href="javascript:xxxx" ``` ,  href 属性 会过滤掉
   
-3. 来看看以下的攻击范本:
+2. 来看看以下的攻击范本:
 ``` javascript
 1. ><script>alert(11)</script><
 2. ><img src="test1111.png" onerror="javascript:alert(1)" /><
 3. <a href="javascript:alert(11);" 
 4. iframe src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="
 ```
-
-4. 是否可以忽略检查
-
-属性是可运行代码的，可以参考以下代码进行忽略检查，
+#### 忽略检查
+存在很多情况，我们的属性是执行代码的，可以参考以下代码进行忽略检查，
 ```javascript
 var divEl = document.querySelector('#test');
 var xssfwtoken = window.XSS_FW_TOKEN;
