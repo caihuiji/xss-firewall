@@ -2,19 +2,19 @@
     <head>
         <meta charset="utf-8">
         <title>Test</title>
-		 <link rel="stylesheet" href="./mocha.css" />
+		 <link rel="stylesheet" href="./lib/mocha.css" />
     </head>
     <body>
 	
-		<a href="./index.html">开启xssfirewall</a>
-		<a href="./index.html?closexssfirewall=true">关闭xssfirewall</a>
+		<a href="./test.html">开启xssfirewall</a>
+		<a href="./test.html?closexssfirewall=true">关闭xssfirewall</a>
         <div id="mocha"></div>
 		<div style="visibility: hidden;"  id="test-panel">
 
 		</div>
-        <script src="./chai.js"></script>
-        <script src="./mocha.js"></script>
-		<script src="./jquery.js"></script>
+        <script src="./lib/chai.js"></script>
+        <script src="./lib/mocha.js"></script>
+		<script src="./lib/jquery.js"></script>
 		<script>
 		XSS_FW_CONFIG = {
 			checkAfterDomReady : true,
