@@ -23,7 +23,8 @@ window.XSS_FW_CONFIG = {
 <script src='./xss-firewall.js ></script>
 ```
 
-浏览器支持
+## 浏览器支持
+
 支持 html5 的浏览器 
 ie9+
 
