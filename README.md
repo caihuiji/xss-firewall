@@ -50,7 +50,7 @@ ie9+和其他常用的浏览器
 ## 为什么可以拦截
 
 #### 漏洞原因
-xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原因：
+xss-firewall 为什么可以拦截 xss 攻击，产生漏洞的原因：
 - 插入html ，忘记了 htmlencode
 - 设置 ```<a href >``` 值，或则 ```<iframe src>``` 时候，后台没有严格校验，被插入了 javascript:xxxx
 
@@ -58,10 +58,10 @@ xss-firewall 为什么可以拦截 xss 攻击，查看一下产生漏洞的原�
 1. 假设现在漏洞已经产生，如何拦截:
 - 模板带有 ```<script> ```标签 ，会当做XSS 攻击代码过滤掉并上报
 - 模板带有 ```<iframe src="javascript:xxx"``` 会拦截并上报， 但是正常的src 不会拦截
-- 模板带有 ```<img src="xxx" onerror="javascript:xxx"``` onload , onerror onload 会过滤并上报
+- 模板带有 ```<img src="xxx" onload="" onerror="javascript:xxx"```  , onerror onload 会过滤并上报
 - 模板带有 ```<a href="javascript:xxxx" ``` ,  href 属性会过滤掉并上报
   
-2. 来看看以下的攻击范本:
+2. 例如以下的攻击范本:
 ``` javascript
 1. ><script>alert(11)</script><
 2. ><img src="test1111.png" onerror="javascript:alert(1)" /><
