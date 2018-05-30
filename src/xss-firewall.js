@@ -25,7 +25,7 @@
 		Object.keys(window.XSS_FW_CONFIG).forEach(function (key ){
 			XSS_FW_CONFIG[key] = window.XSS_FW_CONFIG[key];
 		});
-	}
+	};
 
 	window.XSS_FW_TOKEN = XSS_FW_CONFIG.ignoreToken;
 	
@@ -70,7 +70,7 @@
             }
 
         },3000);
-    }
+    };
 
 	
 
@@ -90,8 +90,9 @@
             !/^javascript:;?window\.location\.reload\(\);?$/gi.test(str) &&
             !/^javascript:.?history\.go\(-1\);?$/gi.test(str) &&
             !/^javascript:history\.back\(\);?$/gi.test(str) &&
-            !/^javascript:false;?$/gi.test(str)
-        ) {
+            !/^javascript:false;?$/gi.test(str) ) {
+			return true;
+        } else if (/^data:text\/html;base64,/gi.test(str) ) {
             return true;
         }
         return false;
