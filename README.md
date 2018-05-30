@@ -23,6 +23,25 @@ window.XSS_FW_CONFIG = {
 <script src='./xss-firewall.js ></script>
 ```
 
+**接收上报**
+目前上报使用xhr2 的跨域post 提交，如果是跨域请求，请在服务器端开启跨域。
+上报格式如下下：
+```javascript
+//type 
+// has_innerScript - 存在内敛的script
+// filterHref,filterSetAttribute_href      - 过滤了 a href
+// filterImgSrc    			   - 过滤了img src
+// filterIframeSrc,filterSetAttribute_src  - 过滤了iframe src
+// filterScript    			   - 过滤了 script
+// filterIframe    			   - 过滤了 iframe 
+// has_onerror,has_onload 		   - 过滤了 onerror , onload
+
+var submitArray = [{type :'has_script' , domStr :'<a href="javascript:alert(111)"' , url : 'http://test.com'  }] ;
+xss-monitor=JSON.stringfy(submitArray);
+```
+
+> 更详细使用方式可以查看 ```test/demo.html```
+
 ### 浏览器支持
 
 支持 html5 的浏览器 
