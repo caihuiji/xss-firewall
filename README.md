@@ -37,7 +37,7 @@ window.XSS_FW_CONFIG = {
 // filterIframe    			   - 过滤了 iframe 
 // has_onerror,has_onload 		   - 过滤了 onerror , onload
 
-var submitArray = [{type :'has_script' , domStr :'<a href="javascript:alert(111)"' , url : 'http://test.com'  }] ;
+var submitArray = [{type :'has_innerScript' , domStr :'<a href="javascript:alert(111)"' , url : 'http://test.com'  }] ;
 
 post( 'xss-monitor=' + JSON.stringfy(submitArray))
 ```
