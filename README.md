@@ -82,7 +82,7 @@ divEl.innerHTML = '<a href="javascript:window.history.go(-2)" xssfw-ignore="'+xs
 
 #### 开启了 csp(content-security-policy) ，还需要用xss-firewall 吗？
 开启CSP ，可以最大程度的限制插入恶意的js和上报信息（用img 上报给恶意网站）。
-但是还是存在漏洞 ```iframe src``` 和  ```a href="window..location.href=xxxx"``` 上报信息的。
+但是还是存在漏洞 ```iframe src``` 和  ```href="javascript:window.location.href=xxxx"``` 上报信息的。
 
 #### 用了vuejs或则reactjs ，还需要用xss-firewall 吗？
 这些框架都是限制了开发者使用innerHTML插入代码，在渲染模版的时候变量都会默认进行html转义。
