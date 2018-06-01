@@ -86,7 +86,7 @@ divEl.innerHTML = '<a href="javascript:window.history.go(-2)" xssfw-ignore="'+xs
 
 #### 用了vuejs或则reactjs ，还需要用xss-firewall 吗？
 这些框架都是限制了开发者使用innerHTML插入代码，在渲染模版的时候变量都会默认进行html转义。
-但是没有针对***漏洞原因2***进行处理
+但是没有针对**漏洞原因2**进行处理
 
 >> 所以说，xss-firewall 是最后一道防线和监控  ^_^
 
