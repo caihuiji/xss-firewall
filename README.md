@@ -50,16 +50,16 @@ ie9+和其他常用的浏览器
 ## 为什么可以拦截
 
 #### 漏洞原因
-xss-firewall 为什么可以拦截 xss 攻击，产生漏洞的原因：
+先来看看产生漏洞的原因：
 - 插入html ，忘记了 htmlencode
 - 设置 ```<a href >``` 值，或则 ```<iframe src>``` 时候，后台没有严格校验，被插入了 javascript:xxxx
 
 #### 拦截方式
 1. 假设现在漏洞已经产生，如何拦截:
-- 模板带有 ```<script> ```标签 ，会当做XSS 攻击代码过滤掉并上报
-- 模板带有 ```<iframe src="javascript:xxx"``` 会拦截并上报， 但是正常的src 不会拦截
-- 模板带有 ```<img src="xxx" onload="" onerror="javascript:xxx"```  , onerror onload 会过滤并上报
-- 模板带有 ```<a href="javascript:xxxx" ``` ,  href 属性会过滤掉并上报
+- 插入的html片段带有 ```<script> ```标签 ，会当做XSS 攻击代码过滤掉并上报
+- 插入的html片段带有 ```<iframe src="javascript:xxx"``` 会拦截并上报， 但是正常的src 不会拦截
+- 插入的html片段带有 ```<img src="xxx" onload="" onerror="javascript:xxx"```  , onerror onload 会过滤并上报
+- 插入的html片段带有 ```<a href="javascript:xxxx" ``` ,  href 属性会过滤掉并上报
   
 2. 例如以下的攻击范本:
 ``` javascript
@@ -76,6 +76,19 @@ var xssfwtoken = window.XSS_FW_TOKEN;
 divEl.innerHTML = '<a href="javascript:window.history.go(-2)" xssfw-ignore="'+xssfwtoken+'">';
 ```
 但是 ```<script>``` 是不可以忽略检查的
+
+
+## 其他
+
+#### 开启了 csp(content-security-policy) ，还需要用xss-firewall 吗？
+开启CSP ，可以最大程度的限制插入恶意的js和上报信息（用img 上报给恶意网站）。
+但是还是存在漏洞 ```iframe src``` 和  ```a href="window..location.href=xxxx"``` 上报信息的。
+
+#### 用了vuejs或则reactjs ，还需要用xss-firewall 吗？
+这些框架都是限制了开发者使用innerHTML插入代码，在渲染模版的时候变量都会默认进行html转义。
+但是没有针对***漏洞原因2***进行处理
+
+>> 所以说，xss-firewall 是最后一道防线和监控  ^_^
 
 
 
