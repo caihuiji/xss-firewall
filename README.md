@@ -3,6 +3,7 @@ xss-firewall  -  前端xss防火墙
 目前防范XSS 攻击，需要开发者在渲染HTML模板的时候对变量进行转义，然而总会存在忘记转义的情况下。我们无法保证每个开发者都能记得转义，但是我们能受到XSS 攻击的时候，进行拦截和上报。
 
 <br>
+
 ## Getting Started
 
 **如何使用**
@@ -45,6 +46,7 @@ post( 'xss-monitor=' + JSON.stringfy(submitArray))
 ### 浏览器支持
 
 ie9+和其他常用的浏览器
+
 <br>
 
 ## 为什么可以拦截
@@ -78,6 +80,7 @@ divEl.innerHTML = '<a href="javascript:window.history.go(-2)" xssfw-ignore="'+xs
 但是 ```<script>``` 是不可以忽略检查的
 
 <br>
+
 ## 其他
 
 #### 开启了 csp(content-security-policy) ，还需要用xss-firewall 吗？
