@@ -47,7 +47,7 @@ post( 'xss-monitor=' + JSON.stringfy(submitArray))
 ie9+和其他常用的浏览器
 
 
-## 为什么可以拦截
+### 为什么可以拦截
 
 #### 漏洞原因
 先来看看产生漏洞的原因：
@@ -78,7 +78,7 @@ divEl.innerHTML = '<a href="javascript:window.history.go(-2)" xssfw-ignore="'+xs
 但是 ```<script>``` 是不可以忽略检查的
 
 
-## 其他
+### 其他
 
 #### 开启了 csp(content-security-policy) ，还需要用xss-firewall 吗？
 开启CSP ，可以最大程度的限制插入恶意的js和上报信息（用img 上报给恶意网站）。
