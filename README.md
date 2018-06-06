@@ -28,7 +28,7 @@ window.XSS_FW_CONFIG = {
 上报格式如下：
 ```javascript
 //type 
-// has_innerScript - 存在内敛的script
+// has_innerScript - 存在内联的script
 // filterHref,filterSetAttribute_href      - 过滤了 a href
 // filterImgSrc    			   - 过滤了img src
 // filterIframeSrc,filterSetAttribute_src  - 过滤了iframe src
