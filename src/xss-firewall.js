@@ -17,6 +17,7 @@
         reportUrl: '',
         reportBefore: false,
         checkAfterDomReady: true,
+        filterEvent: ['onerror' , 'onload'],
         ignoreToken: 'xssfw-token-' + Math.random(),
     };
 
@@ -24,7 +25,7 @@
     var isReporting = false;
     var isAspectJquery = false;
     var IGNORE_FLAG_NAME = 'xssfw-ignore';
-    var clearEventTagNAME = { 'IMG': true, 'LINK': true, 'VIDEO': true, 'AUDIO': true, 'IFRAME': true };
+    //var clearEventTagNAME = { 'IMG': true, 'LINK': true, 'VIDEO': true, 'AUDIO': true, 'IFRAME': true };
 
 
     if (window.XSS_FW_CONFIG) {
@@ -109,18 +110,20 @@
     };
 
     var clearEvent = function (node) {
-        if (node.hasAttribute('onerror')) {
-            reportSubmit('has_onerror', node.outerHTML, node);
+        if(!XSS_FW_CONFIG.filterEvent){
+            return ;
         }
-        if (node.hasAttribute('onload')) {
-            reportSubmit('has_onload', node.outerHTML, node);
+        for(var i = 0 ; i < XSS_FW_CONFIG.filterEvent.length ; i++ ){
+            var eventName = XSS_FW_CONFIG.filterEvent[i];
+            if (node.hasAttribute(eventName)) {
+                reportSubmit('has_' + eventName, node.outerHTML, node);
+            }
+
+            if (!XSS_FW_CONFIG.reportOnly && !shouldIgnore(node)) {
+                node.removeAttribute(eventName);
+            }
         }
 
-
-        if (!XSS_FW_CONFIG.reportOnly && !shouldIgnore(node)) {
-            node.removeAttribute('onerror');
-            node.removeAttribute('onload');
-        }
     };
 
     var shouldIgnore = function (dom) {
@@ -197,9 +200,9 @@
             var node = nodes[i];
 
             // 这些tag 不能存在在内敛代码的事件，存在攻击风险
-            if (clearEventTagNAME[node.tagName]) {
+           // if (clearEventTagNAME[node.tagName]) {
                 clearEvent(node);
-            }
+            //}
 
             if (node.tagName == 'A' && checkIsXssAnchor(node)) {
                 reportSubmit('filterHref', node.outerHTML, node);
