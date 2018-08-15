@@ -14,7 +14,8 @@ window.XSS_FW_CONFIG = {
 	reportOnly: true,                               // 只上报，不拦截
 	reportUrl : '',                                 // 上报的URL
 	reportBefore : function(){}                     // 上报之前的回调
-	checkAfterDomReady : true,                      // 是否在domready 后开始检测
+	filterEvent : ['onerror' , 'onload'] ,          // 过滤内敛标签中的事件，默认只有 onerror,onload
+ 	checkAfterDomReady : true,                      // 是否在domready 后开始检测
 							(由于使用了MutationObserver 扫描，建议保持默认值)
 	ignoreToken: 'xssfw-token-' + Math.random(),    // 忽略属性检查的token 
 };
