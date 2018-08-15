@@ -110,7 +110,7 @@
     };
 
     var clearEvent = function (node) {
-        if(!XSS_FW_CONFIG.filterEvent){
+        if(!XSS_FW_CONFIG.filterEvent || !node.hasAttribute){
             return ;
         }
         for(var i = 0 ; i < XSS_FW_CONFIG.filterEvent.length ; i++ ){
@@ -156,6 +156,11 @@
                     return '';
                 }
             }
+
+            if (!isShouldIgnore) {
+                $0 = $0.replace(/\bsrcdoc=/gi , ' unsrcdoc=');
+            }
+
             return $0;
         });
 
