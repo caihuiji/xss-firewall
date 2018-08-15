@@ -18,10 +18,12 @@
 		<script>
 		XSS_FW_CONFIG = {
 			checkAfterDomReady : true,
+			filterEvent : ['onerror' , 'onload'],
 			reportOnly : window.location.href.indexOf('closexssfirewall') == -1 ? false : true,
 		}
 		</script>
 		<script src="./../dist/xss-firewall.min.js"></script>
+		<!--<script src="./../src/xss-firewall.js"></script>-->
 
 		
 		<script>
