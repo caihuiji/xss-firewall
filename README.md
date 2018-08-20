@@ -46,7 +46,7 @@ post( 'xss-monitor=' + JSON.stringfy(submitArray))
 
 ### 浏览器支持
 
-ie9+和其他常用的浏览器
+ie11+和其他常用的浏览器
 
 <br>
 
