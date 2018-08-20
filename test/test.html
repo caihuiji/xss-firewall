@@ -22,8 +22,8 @@
 			reportOnly : window.location.href.indexOf('closexssfirewall') == -1 ? false : true,
 		}
 		</script>
-		<script src="./../dist/xss-firewall.min.js"></script>
-		<!--<script src="./../src/xss-firewall.js"></script>-->
+		<!--<script src="./../dist/xss-firewall.min.js"></script>-->
+		<script src="./../src/xss-firewall.js"></script>
 
 		
 		<script>
@@ -95,12 +95,20 @@
 						$testPanel.html('')
 					});
 
-				 	it('insert iframe', function() {
+				 	it('insert iframe with src', function() {
 						var innerValue = Math.random();
 						$testPanel.html('<iframe src="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
 
 						should.not.equal(window.iframevalue, innerValue);						
 					});
+
+                  it('insert iframe with onload', function() {
+                      var innerValue = Math.random();
+                      $testPanel.html('<iframe onload="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
+
+                      should.not.equal(window.iframevalue, innerValue);
+
+                  });
 
 					it('set iframe src 1', function() {
 						var innerValue = Math.random();
@@ -121,6 +129,29 @@
 					});
 	
 			 })
+
+
+            describe('hook innerHTML ', function() {
+
+                afterEach(function() {
+                    $testPanel.html('')
+                });
+
+                it('script', function() {
+                    var innerValue = Math.random();
+                    $testPanel[0].innerHTML = '<script>window.innerHTMLValue='+innerValue+';<\/script>';
+
+                    should.not.equal(window.innerHTMLValue, innerValue);
+                });
+
+                it('iframe onload', function() {
+                    var innerValue = Math.random();
+                    $testPanel[0].innerHTML = '<iframe onload="javascript:window.parent.innerHTMLValue='+innerValue+'" ></iframe>';
+
+                    should.not.equal(window.innerHTMLValue, innerValue);
+                });
+
+            })
 
 
 		
@@ -182,6 +213,16 @@
 							done()
 						},20)
 					});
+
+                   it('img has onload not src', function(done) {
+                       var innerValue = Math.random();
+                       $testPanel.html('<img onload="javascript:window.imgvalue='+innerValue+'"></img>');
+
+                       setTimeout(function (){
+                           should.equal($testPanel.html().indexOf(innerValue), -1);
+                           done()
+                       },20)
+                   });
 
 					it('link has onerror', function(done) {
 						var innerValue = Math.random();

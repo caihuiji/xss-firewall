@@ -141,7 +141,8 @@
         var isMatchXssIframe = false;
         var orgStr = str;
         str = (str || '').replace(/<iframe.*?>/gi, function ($0, $1) {
-            var arr = /\bsrc=['"]([^'"]+)/gi.exec($0);
+            var srcArr = /\bsrc=['"]([^'" ]+)/gi.exec($0);
+            var onloadArr = /\onload=['"]([^'" ]+)/gi.exec($0);
             var ignoreAttr = new RegExp('\\b' + IGNORE_FLAG_NAME + '=[\'"]([^\'"]+)', 'gi').exec($0);
 
             var isShouldIgnore = false;
@@ -150,7 +151,14 @@
             }
 
 
-            if (arr && arr[1] && checkAttrXss(arr[1])) {
+            if (srcArr && srcArr[1] && checkAttrXss(srcArr[1])) {
+                isMatchXssIframe = true;
+                if (!XSS_FW_CONFIG.reportOnly && !isShouldIgnore) {
+                    return '';
+                }
+            }
+
+            if (onloadArr && onloadArr[1] && checkAttrXss(onloadArr[1])) {
                 isMatchXssIframe = true;
                 if (!XSS_FW_CONFIG.reportOnly && !isShouldIgnore) {
                     return '';
@@ -177,7 +185,7 @@
         var isMatchXssScript = false;
         var orgStr = str;
         str = (str || '').replace(/<script.*?>/gi, function ($0) {
-            var arr = /\btype=['"]([^'"]+)/gi.exec($0);
+            var arr = /\btype=['"]([^'" ]+)/gi.exec($0);
 
             if (arr && arr[1] && arr[1] != 'text/javascript') {
                 return $0;
