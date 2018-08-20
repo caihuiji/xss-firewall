@@ -21,6 +21,15 @@
 			filterEvent : ['onerror' , 'onload'],
 			reportOnly : window.location.href.indexOf('closexssfirewall') == -1 ? false : true,
 		}
+
+
+        var rMsie = /(msie\s|trident.*rv:)([\w.]+)/;
+        var ua = navigator.userAgent.toLowerCase();
+        var match = rMsie.exec(ua);
+        var isIE = false;
+        if (match != null) {
+            isIE = true;
+        }
 		</script>
 		<!--<script src="./../dist/xss-firewall.min.js"></script>-->
 		<script src="./../src/xss-firewall.js"></script>

@@ -142,6 +142,8 @@
         var orgStr = str;
         str = (str || '').replace(/<iframe.*?>/gi, function ($0, $1) {
             var srcArr = /\bsrc=['"]([^'" ]+)/gi.exec($0);
+
+            //无src ，存在 onload ，会直接触发onload
             var onloadArr = /\onload=['"]([^'" ]+)/gi.exec($0);
             var ignoreAttr = new RegExp('\\b' + IGNORE_FLAG_NAME + '=[\'"]([^\'"]+)', 'gi').exec($0);
 
@@ -158,7 +160,7 @@
                 }
             }
 
-            if (onloadArr && onloadArr[1] && checkAttrXss(onloadArr[1])) {
+            if (onloadArr && onloadArr[1] && XSS_FW_CONFIG.filterEvent.indexOf('onload') > -1) {
                 isMatchXssIframe = true;
                 if (!XSS_FW_CONFIG.reportOnly && !isShouldIgnore) {
                     return '';
