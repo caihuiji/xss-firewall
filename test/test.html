@@ -104,19 +104,33 @@
 						$testPanel.html('')
 					});
 
-				 	it('insert iframe with src', function() {
-						var innerValue = Math.random();
-						$testPanel.html('<iframe src="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
+				 it('insert iframe with src', function() {
+					var innerValue = Math.random();
+					$testPanel.html('<iframe src="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
 
-						should.not.equal(window.iframevalue, innerValue);						
-					});
+					should.not.equal(window.iframevalue, innerValue);
+				 });
+
+                  it('insert iframe with src without quot', function() {
+                      var innerValue = Math.random();
+                      $testPanel.html('<iframe src=javascript:window.parent.iframevalue='+innerValue+' ></iframe>');
+
+                      should.not.equal(window.iframevalue, innerValue);
+                  });
+
 
                   it('insert iframe with onload', function() {
                       var innerValue = Math.random();
                       $testPanel.html('<iframe onload="javascript:window.parent.iframevalue='+innerValue+'" ></iframe>');
 
                       should.not.equal(window.iframevalue, innerValue);
+                  });
 
+                  it('insert iframe with onload without quot', function() {
+                      var innerValue = Math.random();
+                      $testPanel.html('<iframe onload=javascript:window.parent.iframevalue='+innerValue+' ></iframe>');
+
+                      should.not.equal(window.iframevalue, innerValue);
                   });
 
 					it('set iframe src 1', function() {
@@ -152,6 +166,14 @@
 
                     should.not.equal(window.innerHTMLValue, innerValue);
                 });
+
+                it('script type not script', function() {
+                    var innerValue = Math.random();
+                    $testPanel[0].innerHTML = '<script type="text/tpl">window.innerHTMLValue='+innerValue+';<\/script>';
+
+                    should.not.equal($testPanel[0].innerHTML.indexOf(innerValue), -1);
+                });
+
 
                 it('iframe onload', function() {
                     var innerValue = Math.random();

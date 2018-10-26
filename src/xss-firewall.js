@@ -17,7 +17,19 @@
         reportUrl: '',
         reportBefore: false,
         checkAfterDomReady: true,
-        filterEvent: ['onerror' , 'onload'],
+        checkNavigatorUrl: true,
+
+        // 默认不许使用内敛事件，很危险！！
+        filterEvent: [
+            'onerror', 'onload',
+            //form
+            'onblur', 'onchange', 'oncontextmenu', 'onfocus', 'onformchange', 'onforminput', 'oninput', 'oninvalid', 'onreset', 'onselect', 'onsubmit',
+            //Mouse
+            'onkeydown', 'onkeypress', 'onkeyup',
+            //click
+            'onclick', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel',
+
+        ],
         ignoreToken: 'xssfw-token-' + Math.random(),
     };
 
@@ -52,7 +64,7 @@
         }
 
 
-        reportArr.push({ type: type, domStr: domStr, dom: dom });
+        reportArr.push({type: type, domStr: domStr, dom: dom});
         isReporting = true;
 
         setTimeout(function () {
@@ -94,12 +106,11 @@
             !/^javascript:history\.back\(\);?$/gi.test(str) &&
             !/^javascript:false;?$/gi.test(str)) {
             return true;
-        } else if (/^data:text\/html;base64,/gi.test(str)) {
+        } else if (/^data:text\/html/gi.test(str)) {
             return true;
         }
         return false;
     };
-
 
     var checkIsXssAnchor = function (node) {
         var href = node.getAttribute('href');
@@ -110,10 +121,10 @@
     };
 
     var clearEvent = function (node) {
-        if(!XSS_FW_CONFIG.filterEvent || !node.hasAttribute){
-            return ;
+        if (!XSS_FW_CONFIG.filterEvent || !node.hasAttribute) {
+            return;
         }
-        for(var i = 0 ; i < XSS_FW_CONFIG.filterEvent.length ; i++ ){
+        for (var i = 0; i < XSS_FW_CONFIG.filterEvent.length; i++) {
             var eventName = XSS_FW_CONFIG.filterEvent[i];
             if (node.hasAttribute(eventName)) {
                 reportSubmit('has_' + eventName, node.outerHTML, node);
@@ -136,16 +147,48 @@
         return false;
     };
 
+
+    var getAttrList = function (content) {
+        content = (content || '').replace(/^<[\w]+/i, '').replace(/>$/i, '').split(' ');
+        var arr = [];
+        content.forEach(function (attStr) {
+            if (!attStr) {
+                return;
+            }
+            attStr = attStr.replace(/ +/, '');
+            var tmpAtt = attStr.split('=') || [];
+            // 避免参数中有个= 的问题
+            var name = tmpAtt[0] || '';
+            tmpAtt[0] = '';
+            arr.push({name: name, value: (tmpAtt.join('') || '').replace(/['"]/gi, '')});
+        });
+        return arr;
+    }
+
     // 存在内敛的 iframe src 不是http , 过滤
     var filterIframe = function (str) {
         var isMatchXssIframe = false;
         var orgStr = str;
         str = (str || '').replace(/<iframe.*?>/gi, function ($0, $1) {
-            var srcArr = /\bsrc=['"]([^'" ]+)/gi.exec($0);
+            var attrList = getAttrList($0);
 
             //无src ，存在 onload ，会直接触发onload
-            var onloadArr = /\onload=['"]([^'" ]+)/gi.exec($0);
-            var ignoreAttr = new RegExp('\\b' + IGNORE_FLAG_NAME + '=[\'"]([^\'"]+)', 'gi').exec($0);
+            var srcArr, onloadArr, ignoreAttr;
+            attrList.forEach(function (attr) {
+                if (attr.name == 'src') {
+                    srcArr = [attr.name, attr.value];
+                }
+
+                if (attr.name == 'onload') {
+                    onloadArr = [attr.name, attr.value];
+                }
+
+                if (attr.name == IGNORE_FLAG_NAME) {
+                    ignoreAttr = [attr.name, attr.value];
+                }
+
+            });
+
 
             var isShouldIgnore = false;
             if (ignoreAttr && ignoreAttr[1] && ignoreAttr[1] == XSS_FW_CONFIG.ignoreToken) {
@@ -168,7 +211,7 @@
             }
 
             if (!isShouldIgnore) {
-                $0 = $0.replace(/\bsrcdoc=/gi , ' unsrcdoc=');
+                $0 = $0.replace(/\bsrcdoc=/gi, ' unsrcdoc=');
             }
 
             return $0;
@@ -187,7 +230,14 @@
         var isMatchXssScript = false;
         var orgStr = str;
         str = (str || '').replace(/<script.*?>/gi, function ($0) {
-            var arr = /\btype=['"]([^'" ]+)/gi.exec($0);
+
+            var arr ;
+            var attrList = getAttrList($0);
+            attrList.forEach(function (attr) {
+                if (attr.name == 'type') {
+                    arr = [attr.name, attr.value];
+                }
+            })
 
             if (arr && arr[1] && arr[1] != 'text/javascript') {
                 return $0;
@@ -209,14 +259,13 @@
         return str;
     };
 
-
     var detectNode = function (nodes) {
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
 
             // 这些tag 不能存在在内敛代码的事件，存在攻击风险
-           // if (clearEventTagNAME[node.tagName]) {
-                clearEvent(node);
+            // if (clearEventTagNAME[node.tagName]) {
+            clearEvent(node);
             //}
 
             if (node.tagName == 'A' && checkIsXssAnchor(node)) {
@@ -241,7 +290,6 @@
             }
         }
     };
-
 
     var htmlElementHook = function () {
         var attrHook = function (name, value, orgAttrFunc, node) {
@@ -395,6 +443,72 @@
         isAspectJquery = true;
     };
 
+    var sysHook = function (){
+        var orgFnWrite = document.write;
+        var orgFnWriteln = document.writeln;
+        // var orgFnEval = window.eval;
+
+        document.write = function (value){
+            value = filterScript(value);
+            value = filterIframe(value);
+            return orgFnWrite.apply(this,arguments);
+        }
+
+        document.writeln = function (value){
+            value = filterScript(value);
+            value = filterIframe(value);
+            return orgFnWriteln.apply(this,arguments);
+        }
+
+       /* 好像没有必要重写这个。这个是用户主动运行的代码
+       window.eval = function (value){
+            value = filterScript(value);
+            value = filterIframe(value);
+            return orgFnEval.apply(this,arguments);
+        }*/
+
+    }
+
+    var unescapeUrl = function (url, codeUrl) {
+        for (var arr = [], o = 0; o < url.length; o++) if ("&" == url.charAt(o)) {
+            var a = [3, 4, 5, 9], r = 0;
+            for (var c in a) {
+                var i = a[c];
+                if (o + i <= url.length) {
+                    var m = url.substr(o, i).toLowerCase();
+                    if (codeUrl[m]) {
+                        arr.push(codeUrl[m]), o = o + i - 1, r = 1;
+                        break
+                    }
+                }
+            }
+            0 == r && arr.push(url.charAt(o))
+        } else arr.push(url.charAt(o));
+        return arr.join("")
+    }
+
+    var checkNavigatorUrl = function () {
+        var codeMap = {}, codeStr = "'\"<>`script:daex/hml;bs64,";
+        for (var n = 0; n < codeStr.length; n++) {
+            var charAt = codeStr.charAt(n),
+                charCodeAt = charAt.charCodeAt(),
+                charCodeAt2 = charCodeAt,
+                chartCodeAt16 = charCodeAt.toString(16);
+            for (var i = 0; i < 7 - charCodeAt.toString().length; i++) charCodeAt2 = "0" + charCodeAt2;
+            codeMap["&#" + charCodeAt + ";"] = charAt, codeMap["&#" + charCodeAt2] = charAt, codeMap["&#x" + chartCodeAt16] = charAt;
+        }
+        codeMap["&lt"] = "<", codeMap["&gt"] = ">", codeMap["&quot"] = '"';
+
+        var pageHref = location.href;
+        pageHref = decodeURIComponent(unescapeUrl(pageHref, codeMap));
+
+        var reg = new RegExp("['\"<>`]|script:|data:text/html;base64,");
+        if (reg.test(pageHref)) {
+            pageHref = pageHref.replace(/['\"<>`]|script:/gi, "M").replace(/data:text\/html;base64,/gi, "data:text/plain;base64,");
+            location.href = encodeURI(pageHref);
+        }
+    }
+
 
     // init
 
@@ -410,19 +524,20 @@
     });
 
     var init = function () {
-        if ((window.location.search || '').indexOf('xss-firewall-ignore=1') !== -1) {
-            console.log('%cDetected parameter "xss-firewall-ignore=1" in url  \n%c@author https://github.com/caihuiji/xss-firewall', 'color:red;font-size:18px', 'color:black;font-size:18px');
-            return;
-        } else {
-            console.log('%cIn the dev environment , you can add parameter "xss-firewall-ignore=1" into your url to close xss-firewall\n%c@author https://github.com/caihuiji/xss-firewall', 'color:red;font-size:18px', 'color:black;font-size:18px');
-        }
         observer.observe(document, {
             subtree: true,
             childList: true
         });
         htmlElementHook();
         jqueryHook();
+        sysHook();
+
     };
+
+    //检测反射性xss攻击
+    if (XSS_FW_CONFIG.checkNavigatorUrl) {
+        checkNavigatorUrl();
+    }
 
     if (!XSS_FW_CONFIG.checkAfterDomReady) {
         init();
