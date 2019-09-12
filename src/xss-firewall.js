@@ -98,15 +98,19 @@
 
     // 校验属性是否可执行的 javascript
     var checkAttrXss = function (str) {
-        if (/^javascript:/gi.test(str) &&
-            !/^javascript:;?$/gi.test(str) &&
-            !/^javascript:void\(0\);?$/gi.test(str) &&
-            !/^javascript:;?window\.location\.reload\(\);?$/gi.test(str) &&
-            !/^javascript:.?history\.go\(-1\);?$/gi.test(str) &&
-            !/^javascript:history\.back\(\);?$/gi.test(str) &&
-            !/^javascript:false;?$/gi.test(str)) {
+        var tmpStr = (str||'').replace(/\s/gi, '');
+        if (/^javascript:/gi.test(tmpStr) &&
+            !/^javascript:;?$/gi.test(tmpStr) &&
+            !/^javascript:void\(0\);?$/gi.test(tmpStr) &&
+            !/^javascript:0;?$/gi.test(tmpStr) &&
+            !/^javascript:.?history\.go\(-.\);?$/gi.test(tmpStr) &&
+            !/^javascript:history\.back\(\);?$/gi.test(tmpStr) &&
+            !/^javascript:.?window\.location\.reload\(\);?$/gi.test(tmpStr) &&
+            !/^javascript:.?window\.history\.go\(-.\);?$/gi.test(tmpStr) &&
+            !/^javascript:.?window\.history\.back\(\);?$/gi.test(tmpStr) &&
+            !/^javascript:false;?$/gi.test(tmpStr)) {
             return true;
-        } else if (/^data:text\/html/gi.test(str)) {
+        } else if (/^data:text\/html;base64,/gi.test(tmpStr)) {
             return true;
         }
         return false;
